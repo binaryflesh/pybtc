@@ -209,7 +209,7 @@ def is_address_valid(address, testnet=False):
             return False
         try:
             prefix, payload = address.split('1')
-        except:
+        except(ValueError, AttributeError, IndexError):
             return False
         upp = True if prefix[0].isupper() else False
         for i in payload[1:]:
@@ -243,5 +243,3 @@ def get_witness_version(address):
     address = address.split("1")[1]
     h = rebase_32_to_5(address)
     return h[0]
-
-
