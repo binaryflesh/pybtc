@@ -19,7 +19,6 @@ from pybtc.functions.address import hash_to_address, address_net_type, address_t
 from pybtc.address import PrivateKey, Address, ScriptAddress, PublicKey
 
 
-
 class Transaction(dict):
     """
     The class for Transaction object
@@ -124,22 +123,21 @@ class Transaction(dict):
         self["bSize"] = end - start - sw_len
         self["weight"] = self["bSize"] * 3 + self["size"]
         self["vSize"] = ceil(self["weight"] / 4)
-        if ic == 1 and \
-                        self["vIn"][0]["txId"] == b'\x00' * 32 and \
-                        self["vIn"][0]["vOut"] == 0xffffffff:
+        if ic == 1 and self["vIn"][0]["txId"] == b'\x00' * 32 and self["vIn"][0]["vOut"] == 0xffffffff:
             self["coinbase"] = True
         else:
             self["coinbase"] = False
         if sw:
             self["segwit"] = True
             self["hash"] = double_sha256(b)
-            self["txId"] = double_sha256(b"%s%s%s" % (b[:4], b[6:sw],b[-4:]))
+            self["txId"] = double_sha256(b"%s%s%s" % (b[:4], b[6:sw], b[-4:]))
         else:
             self["segwit"] = False
             self["txId"] = double_sha256(b)
             self["hash"] = self["txId"]
         if self["format"] == "decoded":
             self.decode()
+        super(Transaction).__init__(self.items())
 
     def decode(self, testnet=None):
         """
