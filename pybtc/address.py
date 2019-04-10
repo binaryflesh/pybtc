@@ -210,7 +210,7 @@ class Address:
         return self.address
 
 
-class ScriptAddress():
+class ScriptAddress:
     def __init__(self, script,
                  testnet=False, witness_version=0):
         self.witness_version = witness_version
