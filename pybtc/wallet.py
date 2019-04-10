@@ -5,7 +5,7 @@ from .functions import *
 # Hierarchical Deterministic Wallets (HD Wallets)
 # BIP-44 support
 
-class Wallet():
+class Wallet:
     """
     The class for creating wallet object.
 
