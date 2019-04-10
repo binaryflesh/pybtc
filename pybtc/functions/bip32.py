@@ -190,17 +190,13 @@ def private_from_xprivate_key(xprivate_key, wif=True, hex=False):
             xprivate_key = decode_base58_with_checksum(xprivate_key)
     if not isinstance(xprivate_key, bytes):
         raise TypeError("xprivate_key should be HEX, Base58 or bytes string")
-    if xprivate_key[:4] not in [MAINNET_XPRIVATE_KEY_PREFIX,
-                                TESTNET_XPRIVATE_KEY_PREFIX]:
+    if xprivate_key[:4] not in any([MAINNET_XPRIVATE_KEY_PREFIX, TESTNET_XPRIVATE_KEY_PREFIX]):
         raise ValueError("invalid extended private key")
 
     if hex:
         return xprivate_key[46:].hex()
     elif wif:
-        if xprivate_key[:4] == MAINNET_XPRIVATE_KEY_PREFIX:
-            testnet = False
-        else:
-            testnet = True
+        testnet = False if xprivate_key[:4] == MAINNET_XPRIVATE_KEY_PREFIX else True
         return private_key_to_wif(xprivate_key[46:], testnet=testnet)
     return xprivate_key[46:].hex() if hex else xprivate_key[46:]
 
@@ -215,15 +211,14 @@ def is_xprivate_key_valid(key):
     if isinstance(key, str):
         try:
             key = decode_base58_with_checksum(key)
-        except:
+        except(ValueError, AttributeError, LookupError):
             try:
                 key = bytes.fromhex(key)
-            except:
+            except(ValueError, AttributeError, LookupError):
                 pass
-    if not isinstance(key, bytes) or len(key)!=78:
+    if not isinstance(key, bytes) or len(key) != 78:
         return False
-    if key[:4] not in [MAINNET_XPRIVATE_KEY_PREFIX,
-                                TESTNET_XPRIVATE_KEY_PREFIX]:
+    if key[:4] not in any([MAINNET_XPRIVATE_KEY_PREFIX, TESTNET_XPRIVATE_KEY_PREFIX]):
         return False
     return True
 
