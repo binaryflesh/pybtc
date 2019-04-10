@@ -4,6 +4,7 @@ import hashlib
 from pybtc.functions.hash import sha256
 from pybtc.functions.tools import int_from_bytes
 
+
 def generate_entropy(strength=256, hex=True):
     """
     Generate 128-256 bits entropy bytes string
@@ -15,7 +16,7 @@ def generate_entropy(strength=256, hex=True):
     if strength not in [128, 160, 192, 224, 256]:
         raise ValueError('strength should be one of the following [128, 160, 192, 224, 256]')
     a = random.SystemRandom().randint(0, ECDSA_SEC256K1_ORDER)
-    i = int((time.time() % 0.01 ) * 100000)
+    i = int((time.time() % 0.01) * 100000)
     h = a.to_bytes(32, byteorder="big")
     # more entropy from system timer and sha256 derivation
     while i:
@@ -57,7 +58,7 @@ def entropy_to_mnemonic(entropy, language='english', word_list_dir=None, word_li
                          italian, japanese, korean, spanish), by default is english.
     :param str word_list_dir: (optional) path to a directory containing a list of words,
                               by default None (use BIP39 standard list)
-    :param list word_list: (optional) already loaded word list, by default None    
+    :param list word_list: (optional) already loaded word list, by default None
     :return: mnemonic words string.
     """
     if isinstance(entropy, str):
@@ -84,13 +85,13 @@ def mnemonic_to_entropy(mnemonic, language='english', word_list_dir=None,
                         word_list=None, hex=True):
     """
     Converting mnemonic words to entropy.
-    
+
     :param str mnemonic: mnemonic words string (space separated)
     :param str language: (optional) uses word list language (chinese_simplified, chinese_traditional, english, french,
                          italian, japanese, korean, spanish), by default is english.
     :param str word_list_dir: (optional) path to a directory containing a list of words,
                               by default None (use BIP39 standard list)
-    :param list word_list: (optional) already loaded word list, by default None    
+    :param list word_list: (optional) already loaded word list, by default None
     :param boolean hex: return HEX encoded string result flag, by default True.
     :return: bytes string.
     """
@@ -123,7 +124,7 @@ def mnemonic_to_seed(mnemonic, passphrase="", hex=True):
     Converting mnemonic words string to seed for uses in key derivation (BIP-0032).
 
     :param str mnemonic: mnemonic words string (space separated)
-    :param str passphrase: (optional) passphrase to get ability use 2FA approach for 
+    :param str passphrase: (optional) passphrase to get ability use 2FA approach for
                           creating seed, by default empty string.
     :param boolean hex: return HEX encoded string result flag, by default True.
     :return: HEX encoded or bytes string.
