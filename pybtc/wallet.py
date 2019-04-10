@@ -1,4 +1,3 @@
-from struct import unpack
 from .functions import *
 
 
