@@ -43,7 +43,7 @@ class PrivateKey:
             if isinstance(key, str):
                 try:
                     key = bytes_from_hex(key)
-                except:
+                except (AttributeError, TypeError, ValueError):
                     pass
             if isinstance(key, bytes):
                 if len(key) != 32:
