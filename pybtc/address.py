@@ -75,7 +75,7 @@ class PrivateKey:
         return self.wif
 
 
-class PublicKey():
+class PublicKey:
     """
     The class for public key object.
 
