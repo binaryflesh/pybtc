@@ -20,7 +20,7 @@ def merkle_root(tx_hash_list, hex=True):
             h1 = tx_hash_list.pop(0)
             try:
                 h2 = tx_hash_list.pop(0)
-            except:
+            except(IndexError, ValueError):
                 h2 = h1
             append(double_sha256(h1 + h2))
         if len(new_hash_list) > 1:
@@ -51,7 +51,7 @@ def merkle_branches(tx_hash_list, hex=True):
             h1 = tx_hash_list.pop(0)
             try:
                 h2 = tx_hash_list.pop(0)
-            except:
+            except(IndexError, ValueError):
                 h2 = h1
             new_hash_list_append(double_sha256(h1 + h2))
         if len(new_hash_list) > 1:
