@@ -825,9 +825,8 @@ class Transaction(dict):
         # calculate P2SH redeem script from P2WSH redeem script
         return op_push_data(b"\x00" + op_push_data(sha256(redeem_script)))
 
-    def __get_bare_multisig_script_sig__(self,  script_sig, script_pub_key,
-                                         keys, signatures, n):
-        sig_map = {keys[i]:signatures[i] for i in range(len(keys))}
+    def __get_bare_multisig_script_sig__(self,  script_sig, script_pub_key, keys, signatures, n):
+        sig_map = {keys[i]: signatures[i] for i in range(len(keys))}
         pub_keys = get_multisig_public_keys(script_pub_key)
         s = get_stream(script_sig)
         o, d = read_opcode(s)
@@ -846,16 +845,13 @@ class Transaction(dict):
         for k in pub_keys:
             try:
                 r.append(op_push_data(sig_map[k]))
-            except:
+            except(ValueError, IndexError, AttributeError):
                 pass
         return r
 
-    def __get_multisig_script_sig__(self,  script_sig,
-                                    keys, signatures,
-                                    script_code,
-                                    redeem_script,
-                                    n, amount=None):
-        sig_map = {keys[i]:signatures[i] for i in range(len(keys))}
+    def __get_multisig_script_sig__(
+            self,  script_sig, keys, signatures, script_code, redeem_script, n, amount=None):
+        sig_map = {keys[i]: signatures[i] for i in range(len(keys))}
         pub_keys = get_multisig_public_keys(redeem_script)
         p2wsh = True if isinstance(script_sig, list) else False
         if not p2wsh:
@@ -876,7 +872,7 @@ class Transaction(dict):
             for k in pub_keys:
                 try:
                     r.append(op_push_data(sig_map[k]))
-                except:
+                except(ValueError, AttributeError, IndexError):
                     pass
             r += [op_push_data(redeem_script)]
         else:
@@ -886,9 +882,8 @@ class Transaction(dict):
                 if w and is_valid_signature_encoding(w):
                     d = w[:-1]
                     for i in range(4):
-                        sighash = self.sig_hash_segwit(n, amount,
-                                                       script_pub_key=script_code,
-                                                       sighash_type=w[-1])
+                        sighash = self.sig_hash_segwit(
+                            n, amount, script_pub_key=script_code, sighash_type=w[-1])
                         pk = public_key_recovery(d, sighash, i, hex=0)
                         if pk in pub_keys:
                             sig_map[pk] = w
@@ -897,7 +892,7 @@ class Transaction(dict):
             for k in pub_keys:
                 try:
                     r.append(sig_map[k])
-                except:
+                except(ValueError, AttributeError, IndexError):
                     pass
             r += [redeem_script]
         return r
@@ -905,25 +900,25 @@ class Transaction(dict):
     def sig_hash(self, n, script_pub_key=None, sighash_type=SIGHASH_ALL, preimage=False):
         try:
             self["vIn"][n]
-        except:
+        except(ValueError, AttributeError, IndexError):
             raise Exception("sig_hash error, input not exist")
 
         # check script_pub_key for input
         if script_pub_key is not None:
             script_code = script_pub_key
         else:
-            if  "scriptPubKey" not in self["vIn"][n]:
+            if "scriptPubKey" not in self["vIn"][n]:
                 raise Exception("sig_hash error, scriptPubKey required")
             script_code = self["vIn"][n]["scriptPubKey"]
         if isinstance(script_code, str):
             script_code = bytes.fromhex(script_code)
-        if not isinstance(script_code,bytes):
+        if not isinstance(script_code, bytes):
             raise Exception("sig_hash error, script_code type error")
 
         # remove opcode separators
         if ((sighash_type & 31) == SIGHASH_SINGLE) and (n >= (len(self["vOut"]))):
             if self["format"] == "raw":
-                return  b'\x01%s' % (b'\x00' * 31)
+                return b'\x01%s' % (b'\x00' * 31)
             return rh2s(b'\x01%s' % (b'\x00' * 31))
 
         script_code = delete_from_script(script_code, BYTE_OPCODE["OP_CODESEPARATOR"])
@@ -978,19 +973,19 @@ class Transaction(dict):
     def sig_hash_segwit(self, n, amount, script_pub_key=None, sighash_type=SIGHASH_ALL, preimage=False):
         try:
             self["vIn"][n]
-        except:
+        except(ValueError, AttributeError, IndexError):
             raise Exception("sig_hash error, input not exist")
 
         # check script_pub_key for input
         if script_pub_key is not None:
             script_code = script_pub_key
         else:
-            if  "scriptPubKey" not in self["vIn"][n]:
+            if "scriptPubKey" not in self["vIn"][n]:
                 raise Exception("sig_hash error, scriptPubKey required")
             script_code = self["vIn"][n]["scriptPubKey"]
         if isinstance(script_code, str):
             script_code = bytes.fromhex(script_code)
-        if not isinstance(script_code,bytes):
+        if not isinstance(script_code, bytes):
             raise Exception("sig_hash error, script_code type error")
 
         # remove opcode separators
@@ -1026,19 +1021,17 @@ class Transaction(dict):
             if type(self["vOut"][o]["scriptPubKey"]) == str:
                 script_pub_key = bytes_from_hex(script_pub_key)
             if (sighash_type & 31) != SIGHASH_SINGLE and (sighash_type & 31) != SIGHASH_NONE:
-                ho += b"%s%s%s" % (self["vOut"][o]["value"].to_bytes(8, 'little'),
-                                 int_to_var_int(len(script_pub_key)),
-                                 script_pub_key)
+                ho += b"%s%s%s" % (
+                    self["vOut"][o]["value"].to_bytes(8, 'little'), int_to_var_int(len(script_pub_key)), script_pub_key)
             elif (sighash_type & 31) == SIGHASH_SINGLE and n < len(self["vOut"]):
                 if o == n:
                     ho += b"%s%s%s" % (self["vOut"][o]["value"].to_bytes(8, 'little'),
                                        int_to_var_int(len(script_pub_key)),
                                        script_pub_key)
         hash_outputs = double_sha256(ho) if ho else b'\x00' * 32
-        pm += b"%s%s%s%s%s%s%s%s%s" % (hash_prevouts, hash_sequence, outpoint,
-                                       script_code, value, n_sequence, hash_outputs,
-                                       pack('<L', self["lockTime"]),
-                                       pack('<L', sighash_type))
+        pm += b"%s%s%s%s%s%s%s%s%s" % (
+            hash_prevouts, hash_sequence, outpoint, script_code, value, n_sequence, hash_outputs,
+            pack('<L', self["lockTime"]), pack('<L', sighash_type))
         if not preimage:
             pm = double_sha256(pm)
         return pm if self["format"] == "raw" else pm.hex()
@@ -1088,10 +1081,3 @@ class Transaction(dict):
             self["fee"] = input_sum - output_sum
         else:
             self["fee"] = None
-
-
-
-
-
-
-
