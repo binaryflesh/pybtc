@@ -174,7 +174,7 @@ class Transaction(dict):
                     append(w)
                 self["vIn"][i]["txInWitness"] = t
 
-            except:
+            except(ValueError, AttributeError, IndexError):
                 pass
             try:
                 if type(self["vIn"][i]["addressHash"]) == bytes:
@@ -185,7 +185,7 @@ class Transaction(dict):
                                                             self["testnet"],
                                                             sh,
                                                             witness_version)
-            except:
+            except(ValueError, IndexError, AttributeError):
                 pass
             if "scriptPubKey" in self["vIn"][i]:
                 if type(self["vIn"][i]["scriptPubKey"]) == bytes:
@@ -454,7 +454,7 @@ class Transaction(dict):
             else:
                 raise TypeError("address invalid")
             if script_pub_key:
-                if  script_pub_key != script:
+                if script_pub_key != script:
                     raise Exception("address not match script")
             else:
                 script_pub_key = script
