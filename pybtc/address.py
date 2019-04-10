@@ -153,8 +153,7 @@ class Address:
     In case instance is created from WIF private key, ``PrivateKey`` or ``PublicKey`` compressed and testnet flags
     already contain in initial key parameter and will be ignored.
     """
-    def __init__(self, key=None,
-                 address_type="P2WPKH", testnet=False, compressed=True):
+    def __init__(self, key=None, address_type="P2WPKH", testnet=False, compressed=True):
         if key is None:
             #: instance of ``PrivateKey`` class
             self.private_key = PrivateKey(testnet=testnet,
