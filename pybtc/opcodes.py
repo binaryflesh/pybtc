@@ -153,7 +153,7 @@ BYTE_OPCODE = dict((i, bytes([OPCODE[i]])) for i in OPCODE)
 HEX_OPCODE = dict((i, bytes([OPCODE[i]]).hex()) for i in OPCODE)
 for i in range(256):
     if i not in RAW_OPCODE:
-        RAW_OPCODE[i]="OP_UNKNOWN"
+        RAW_OPCODE[i] = "OP_UNKNOWN"
 
 OP_FALSE = BYTE_OPCODE["OP_FALSE"]
 OP_0 = BYTE_OPCODE["OP_0"]
