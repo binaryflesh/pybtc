@@ -393,9 +393,9 @@ class Transaction(dict):
         if not isinstance(script_sig, bytes) or (len(script_sig) > 520 and input_verify):
             raise TypeError("script_sig invalid")
 
-        if not isinstance(v_out, int) or not (v_out <= 0xffffffff and v_out >= 0):
+        if not isinstance(v_out, int) or ~(v_out <= 0xffffffff and v_out >= 0):
             raise TypeError("v_out invalid")
-        if not isinstance(sequence, int) or not (sequence <= 0xffffffff and sequence >= 0):
+        if not isinstance(sequence, int) or ~(sequence <= 0xffffffff and sequence >= 0):
             raise TypeError("sequence invalid")
 
         if private_key:
@@ -408,20 +408,20 @@ class Transaction(dict):
         if tx_in_witness:
             if not isinstance(tx_in_witness, list):
                 raise TypeError("tx_in_witness invalid")
-            l = 0
+            _ = 0
             witness = []
             for w in tx_in_witness:
                 if isinstance(w, str):
                     witness.append(bytes_from_hex(w) if self["format"] == "raw" else w)
                 else:
                     witness.append(w if self["format"] == "raw" else bytes_from_hex(w))
-                l += 1 + len(w)
+                _ += 1 + len(w)
                 if len(w) >= 0x4c:
-                    l += 1
+                    _ += 1
                 if len(w) > 0xff:
-                    l += 1
+                    _ += 1
             # witness script limit
-            if not l <= 10000:
+            if not _ <= 10000:
                 raise TypeError("tx_in_witness invalid")
 
         if tx_id == b"\x00" * 32:
@@ -486,6 +486,7 @@ class Transaction(dict):
         if tx_in_witness:
             self["segwit"] = True
             self["vIn"][k]["txInWitness"] = witness
+            # FIXME: Local variable 'witness' might be referenced before assignment
         if amount:
             self["vIn"][k]["value"] = amount
         if private_key:
@@ -589,7 +590,7 @@ class Transaction(dict):
         if not private_key:
             try:
                 private_key = self["vIn"][n]["private_key"].key
-            except:
+            except(ValueError, IndexError, AttributeError):
                 raise RuntimeError("no private key")
         if isinstance(private_key, list):
             public_key = [PublicKey(p).key for p in private_key]
@@ -660,10 +661,9 @@ class Transaction(dict):
         sighash = s2rh(sighash) if isinstance(sighash, str) else sighash
         sig = [sign_message(sighash, p, 0) + bytes([sighash_type]) for p in private_key]
         self["vIn"][n]['signatures'] = [s if self["format"] == "raw" else s.hex() for s in sig]
-        return b''.join(self.__get_bare_multisig_script_sig__(self["vIn"][n]["scriptSig"],
-                                                              script_pub_key,
-                                                              public_key, sig,
-                                                              n))
+        return b''.join(
+            self.__get_bare_multisig_script_sig__(
+                self["vIn"][n]["scriptSig"], script_pub_key, public_key, sig, n))
 
     def __sign_pubkey__(self, n, private_key, script_pub_key, sighash_type):
         sighash = self.sig_hash(n, script_pub_key=script_pub_key, sighash_type=sighash_type)
@@ -677,10 +677,8 @@ class Transaction(dict):
         sighash = s2rh(sighash) if isinstance(sighash, str) else sighash
         signature = sign_message(sighash, private_key[0], 0) + bytes([sighash_type])
         self["vIn"][n]['signatures'] = [signature, ] if self["format"] == "raw" else [signature.hex(), ]
-        script_sig = b''.join([bytes([len(signature)]),
-                               signature,
-                               bytes([len(public_key[0])]),
-                               public_key[0]])
+        script_sig = b''.join(
+            [bytes([len(signature)]), signature, bytes([len(public_key[0])]), public_key[0]])
         return script_sig
 
     def __sign_p2sh(self, n, private_key, public_key, redeem_script, sighash_type, amount, p2sh_p2wsh):
@@ -708,11 +706,9 @@ class Transaction(dict):
         sighash = s2rh(sighash) if isinstance(sighash, str) else sighash
         sig = [sign_message(sighash, p, 0) + bytes([sighash_type]) for p in private_key]
         self["vIn"][n]['signatures'] = [s if self["format"] == "raw" else s.hex() for s in sig]
-        return b''.join(self.__get_multisig_script_sig__(self["vIn"][n]["scriptSig"],
-                                                         public_key, sig,
-                                                         redeem_script,
-                                                         redeem_script,
-                                                         n))
+        return b''.join(
+            self.__get_multisig_script_sig__(
+                self["vIn"][n]["scriptSig"], public_key, sig, redeem_script, redeem_script, n))
 
     def __sign_p2sh_p2wpkh(self, n, private_key, public_key, redeem_script, sighash_type, amount):
         s = [b'\x19', OP_DUP, OP_HASH160,
@@ -721,7 +717,7 @@ class Transaction(dict):
         if amount is None:
             try:
                 amount = self["vIn"][n]["value"]
-            except:
+            except(ValueError, AttributeError, IndexError):
                 raise RuntimeError("no input amount")
         sighash = self.sig_hash_segwit(n, amount, script_pub_key=b"".join(s), sighash_type=sighash_type)
         sighash = bytes.fromhex(sighash) if isinstance(sighash, str) else sighash
@@ -733,7 +729,7 @@ class Transaction(dict):
         else:
             self["vIn"][n]['txInWitness'] = [signature.hex(), public_key[0].hex()]
 
-        self["vIn"][n]['signatures'] = [signature,] if self["format"] == "raw" else [signature.hex(),]
+        self["vIn"][n]['signatures'] = [signature] if self["format"] == "raw" else [signature.hex()]
 
         return op_push_data(redeem_script)
 
@@ -747,8 +743,8 @@ class Transaction(dict):
             raise RuntimeError("not implemented")
 
     def __sign_p2sh_custom(self, n, private_key, public_key, redeem_script, sighash_type, amount):
-        raise RuntimeError("not implemented")
-        return b""
+        print(NotImplementedError)
+        return b''
 
     def __sign_p2wpkh(self, n, private_key, public_key, script_pub_key, sighash_type, amount):
         s = [b'\x19', OP_DUP, OP_HASH160, script_pub_key[1:], OP_EQUALVERIFY, OP_CHECKSIG]
