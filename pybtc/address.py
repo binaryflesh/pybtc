@@ -231,8 +231,7 @@ class ScriptAddress:
                                        testnet=self.testnet)
 
     @classmethod
-    def multisig(cls, n, m, public_key_list,
-                 testnet=False, witness_version=0):
+    def multisig(cls, n, m, public_key_list, testnet=False, witness_version=0):
         """
         The class method for creating a multisig address.
 
