@@ -39,11 +39,11 @@ def rebasebits(data, frombits, tobits, pad=True):
     return ret
 
 
-def rebase_5_to_8(data, pad = True):
+def rebase_5_to_8(data, pad=True):
     return rebasebits(data, 5, 8, pad)
 
 
-def rebase_8_to_5(data, pad = True):
+def rebase_8_to_5(data, pad=True):
     return rebasebits(data, 8, 5, pad)
 
 
@@ -59,7 +59,7 @@ def rebase_32_to_5(data):
     return b
 
 
-def rebase_5_to_32(data, bytes = True):
+def rebase_5_to_32(data, bytes=True):
     r = bytearray()
     append = r.append
     [append(base32_int_map[i]) for i in data]
@@ -82,7 +82,7 @@ def encode_base58(b):
     """Encode bytes to a base58-encoded string"""
     # Convert big-endian bytes to integer
 
-    n= int('0x0%s' % b.hex(), 16)
+    n = int('0x0%s' % b.hex(), 16)
 
     # Divide that integer into bas58
     res = []
