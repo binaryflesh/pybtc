@@ -79,7 +79,7 @@ class Wallet:
         extended_key["key"] = encode_base58_with_checksum(xkey)
         return extended_key
 
-    def create_account(self,name, path):
+    def create_account(self, name, path):
         self.accounts[name] = {"extended_key": self.deserialize_xkey(derive_xkey(self.extended_key["key"],
                                                                                  *path)),
                                "path": path}
@@ -88,9 +88,9 @@ class Wallet:
         if self.extended_key["depth"] != 0:
             raise Exception("Create bip44 account only possible from Master private key")
         if not isinstance(account, int):
-            raise  ValueError("account should be integer")
-        self.create_account("%s_external" % account, [44|HARDENED_KEY, HARDENED_KEY, account, 0])
-        self.create_account("%s_internal" % account, [44|HARDENED_KEY, HARDENED_KEY, account, 1])
+            raise ValueError("account should be integer")
+        self.create_account("%s_external" % account, [44 | HARDENED_KEY, HARDENED_KEY, account, 0])
+        self.create_account("%s_internal" % account, [44 | HARDENED_KEY, HARDENED_KEY, account, 1])
 
     def get_bip44_address(self, i, chain="external", account_index=0, address_type="P2WPKH"):
         if chain not in ("internal", "external"):
@@ -128,5 +128,3 @@ class Wallet:
                  "public_key": private_to_public_key(private_key),
                  "private_key": private_key}
         return r
-
-
