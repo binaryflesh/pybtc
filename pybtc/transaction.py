@@ -15,8 +15,8 @@ from pybtc.functions.script import op_push_data, decode_script, parse_script, si
 from pybtc.functions.script import get_multisig_public_keys, read_opcode, is_valid_signature_encoding
 from pybtc.functions.script import public_key_recovery, delete_from_script
 from pybtc.functions.hash import hash160, sha256, double_sha256
-from pybtc.functions.address import  hash_to_address, address_net_type, address_to_script
-from pybtc.address import  PrivateKey, Address, ScriptAddress, PublicKey
+from pybtc.functions.address import hash_to_address, address_net_type, address_to_script
+from pybtc.address import PrivateKey, Address, ScriptAddress, PublicKey
 
 
 
@@ -28,7 +28,7 @@ class Transaction(dict):
                 well be created new empty transaction template.
     :param tx_format: "raw" or "decoded" format. Raw format is mean that all transaction represented in bytes
                       for best performance.
-                      Decoded transaction is represented in human readable format using base68, hex, bech32, 
+                      Decoded transaction is represented in human readable format using base68, hex, bech32,
                       asm and opcodes. By default "decoded" format using.
     :param int version: transaction version for new template, by default 1.
     :param int lock_time: transaction lock time for new template, by default 0.
@@ -228,7 +228,7 @@ class Transaction(dict):
 
     def encode(self):
         """
-        change Transaction object representation to "raw" bytes format, 
+        change Transaction object representation to "raw" bytes format,
         all human readable part will be stripped.
 
         """
@@ -315,9 +315,9 @@ class Transaction(dict):
 
     def serialize(self, segwit=True, hex=True):
         """
-        Get serialized transaction 
-        
-        :param bool segwit: (optional) flag for segwit representation of serialized transaction, by 
+        Get serialized transaction
+
+        :param bool segwit: (optional) flag for segwit representation of serialized transaction, by
                             default True.
         :param bool hex: (optional) if set to True return HEX encoded string, by default True.
         :return str,bytes: serialized transaction in HEX or bytes.
