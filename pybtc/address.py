@@ -203,10 +203,8 @@ class Address:
         #: address hash HEX (string)
         self.hash_hex = self.hash.hex()
         #: address in base58 or bech32 encoding (string)
-        self.address = hash_to_address(self.hash,
-                                       script_hash=self.script_hash,
-                                       witness_version=self.witness_version,
-                                       testnet=self.testnet)
+        self.address = hash_to_address(
+            self.hash, script_hash=self.script_hash, witness_version=self.witness_version, testnet=self.testnet)
 
     def __str__(self):
         return self.address
