@@ -121,9 +121,7 @@ class PublicKey:
             self.testnet = key.testnet
             #: flag for compressed type of corresponding public key (boolean)
             self.compressed = key.compressed
-            public_key = private_to_public_key(key.key,
-                                        compressed=key.compressed,
-                                        hex=False)
+            public_key = private_to_public_key(key.key, compressed=key.compressed, hex=False)
 
         #: public key in  bytes (bytes)
         self.key = public_key
