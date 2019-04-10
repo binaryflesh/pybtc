@@ -102,7 +102,7 @@ class PublicKey:
         if isinstance(key, str):
             try:
                 key = bytes_from_hex(key)
-            except:
+            except (ValueError, AttributeError, TypeError):
                 if is_wif_valid(key):
                     key = PrivateKey(key)
 
