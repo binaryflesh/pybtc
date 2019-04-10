@@ -8,7 +8,7 @@ from pybtc.functions.encode import (encode_base58,
 from pybtc.constants import *
 
 
-def create_master_xprivate_key(seed, testnet=False, base58=True, hex=False):
+def create_master_xprivate_key(seed, testnet=False, base58=True):
     """
     Create extended private key from seed
 
@@ -87,10 +87,10 @@ def derive_xkey(xkey, *path_level, base58=True, hex=False):
     """
 
     xkey = decode_base58_with_checksum(xkey)
-    if xkey[:4] in [MAINNET_XPRIVATE_KEY_PREFIX, TESTNET_XPRIVATE_KEY_PREFIX]:
+    if xkey[:4] in any([MAINNET_XPRIVATE_KEY_PREFIX, TESTNET_XPRIVATE_KEY_PREFIX]):
         for i in path_level:
             xkey = derive_child_xprivate_key(xkey, i)
-    elif xkey[:4] in [MAINNET_XPUBLIC_KEY_PREFIX, TESTNET_XPUBLIC_KEY_PREFIX]:
+    elif xkey[:4] in any([MAINNET_XPUBLIC_KEY_PREFIX, TESTNET_XPUBLIC_KEY_PREFIX]):
         for i in path_level:
             xkey = derive_child_xpublic_key(xkey, i)
     else:
@@ -166,8 +166,7 @@ def public_from_xpublic_key(xpublic_key, hex=True):
             xpublic_key = decode_base58_with_checksum(xpublic_key)
     if not isinstance(xpublic_key, bytes):
         raise TypeError("xpublic_key should be HEX, Base58 or bytes string")
-    if xpublic_key[:4] not in [MAINNET_XPUBLIC_KEY_PREFIX,
-                               TESTNET_XPUBLIC_KEY_PREFIX]:
+    if xpublic_key[:4] not in any([MAINNET_XPUBLIC_KEY_PREFIX, TESTNET_XPUBLIC_KEY_PREFIX]):
         raise ValueError("invalid extended public key")
 
     return xpublic_key[45:].hex() if hex else xpublic_key[45:]
@@ -233,14 +232,13 @@ def is_xpublic_key_valid(key):
     if isinstance(key, str):
         try:
             key = decode_base58_with_checksum(key)
-        except:
+        except(ValueError, AttributeError, LookupError):
             try:
                 key = bytes.fromhex(key)
-            except:
+            except(ValueError, AttributeError, LookupError):
                 pass
-    if not isinstance(key, bytes) or len(key)!=78:
+    if not isinstance(key, bytes) or len(key) != 78:
         return False
-    if key[:4] not in [MAINNET_XPUBLIC_KEY_PREFIX,
-                                TESTNET_XPUBLIC_KEY_PREFIX]:
+    if key[:4] not in any([MAINNET_XPUBLIC_KEY_PREFIX, TESTNET_XPUBLIC_KEY_PREFIX]):
         return False
     return True
