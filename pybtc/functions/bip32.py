@@ -12,7 +12,7 @@ def create_master_xprivate_key(seed, testnet=False, base58=True, hex=False):
     """
     Create extended private key from seed
 
-    :param str,bytes key: seed HEX or bytes string. 
+    :param str,bytes key: seed HEX or bytes string.
     :param boolean base58: (optional) return result as base58 encoded string, by default True.
     :param boolean hex: (optional) return result as HEX encoded string, by default False.
                         In case True base58 flag value will be ignored.
@@ -29,9 +29,7 @@ def create_master_xprivate_key(seed, testnet=False, base58=True, hex=False):
     if m_int <= 0 or m_int > ECDSA_SEC256K1_ORDER:
         return None
     prefix = TESTNET_XPRIVATE_KEY_PREFIX if testnet else MAINNET_XPRIVATE_KEY_PREFIX
-    key = b''.join([prefix,
-                    b'\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-                    c, b'\x00', m])
+    key = b''.join([prefix, b'\x00\x00\x00\x00\x00\x00\x00\x00\x00', c, b'\x00', m])
     if base58:
         key = b"".join([key, double_sha256(key)[:4]])
         return encode_base58(key)
@@ -43,7 +41,7 @@ def xprivate_to_xpublic_key(xprivate_key, base58=True, hex=False):
     """
     Get extended public key from extended private key using ECDSA secp256k1
 
-    :param str,bytes key: extended private key in base58, HEX or bytes string. 
+    :param str,bytes key: extended private key in base58, HEX or bytes string.
     :param boolean base58: (optional) return result as base58 encoded string, by default True.
     :param boolean hex: (optional) return result as HEX encoded string, by default False.
                         In case True base58 flag value will be ignored.
@@ -55,7 +53,7 @@ def xprivate_to_xpublic_key(xprivate_key, base58=True, hex=False):
                 xprivate_key = bytes.fromhex(xprivate_key)
             else:
                 xprivate_key = decode_base58_with_checksum(xprivate_key)
-        except:
+        except(ValueError, AttributeError, LookupError):
             raise ValueError("invalid extended private key")
     if not isinstance(xprivate_key, bytes):
         raise TypeError("extended private key should be base58 string or bytes")
@@ -66,9 +64,7 @@ def xprivate_to_xpublic_key(xprivate_key, base58=True, hex=False):
     else:
         raise ValueError("invalid extended private key")
 
-    key = b"".join([prefix,
-                    xprivate_key[4:45],
-                    private_to_public_key(xprivate_key[46:], hex=False)])
+    key = b"".join([prefix, xprivate_key[4:45], private_to_public_key(xprivate_key[46:], hex=False)])
     if hex:
         return key.hex()
     elif base58:
@@ -81,7 +77,7 @@ def xprivate_to_xpublic_key(xprivate_key, base58=True, hex=False):
 def derive_xkey(xkey, *path_level, base58=True, hex=False):
     """
     Child Key derivation for extended private/public keys
-    
+
     :param bytes xkey: extended private/public in base58, HEX or bytes string format.
     :param list path_level: list of derivation path levels. For hardened derivation use HARDENED_KEY flag.
     :param boolean base58: (optional) return result as base58 encoded string, by default True.
@@ -117,20 +113,14 @@ def derive_child_xprivate_key(xprivate_key, i):
     pub = private_to_public_key(k[1:], hex=False)
     fingerprint = hash160(pub)[:4]
     s = hmac_sha512(c, b"%s%s" % (k if i >= HARDENED_KEY else pub, pack(">L", i)))
-    p_int = int.from_bytes(s[:32],byteorder='big')
+    p_int = int.from_bytes(s[:32], byteorder='big')
     if p_int >= ECDSA_SEC256K1_ORDER:
         return None
     k_int = (int.from_bytes(k[1:], byteorder='big') + p_int) % ECDSA_SEC256K1_ORDER
     if not k_int:
         return None
-    key = int.to_bytes(k_int, byteorder = "big", length=32)
-    return b"".join([xprivate_key[:4],
-                     bytes([depth]),
-                     fingerprint,
-                     pack(">L", i),
-                     s[32:],
-                     b'\x00',
-                     key])
+    key = int.to_bytes(k_int, byteorder="big", length=32)
+    return b"".join([xprivate_key[:4], bytes([depth]), fingerprint, pack(">L", i), s[32:], b'\x00', key])
 
 
 def derive_child_xpublic_key(xpublic_key, i):
@@ -156,12 +146,7 @@ def derive_child_xpublic_key(xpublic_key, i):
         raise RuntimeError("secp256k1 serialize public key operation failed")
     pk = bytes(ffi.buffer(pubkey, 33))
     print(len(pk))
-    return b"".join([xpublic_key[:4],
-                     bytes([depth]),
-                     fingerprint,
-                     pack(">L", i),
-                     s[32:],
-                     pk])
+    return b"".join([xpublic_key[:4], bytes([depth]), fingerprint, pack(">L", i), s[32:], pk])
 
 
 def public_from_xpublic_key(xpublic_key, hex=True):
