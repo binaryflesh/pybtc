@@ -61,6 +61,7 @@ class Block(dict):
         self["weight"] = self["strippedSize"] * 3 + self["size"]
         if format == "decoded":
             self.decode(testnet=testnet)
+        super(Block).__init__(self.items())
 
     def decode(self, testnet=None):
         self["format"] = "decoded"
