@@ -11,7 +11,8 @@ from pybtc.functions.key import (create_private_key,
                                  is_public_key_valid,
                                  private_to_public_key)
 
-class PrivateKey():
+
+class PrivateKey:
     """
     The class for creating private key object.
 
