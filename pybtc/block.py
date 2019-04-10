@@ -95,4 +95,3 @@ class Block(dict):
             else:
                 raise TypeError
         return stream
-
