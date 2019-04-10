@@ -256,7 +256,7 @@ class ScriptAddress:
             if isinstance(a, str):
                 try:
                     a = bytes.fromhex(a)
-                except:
+                except (ValueError, AttributeError, TypeError):
                     if is_wif_valid(a):
                         a = private_to_public_key(a, hex=False)
                     pass
