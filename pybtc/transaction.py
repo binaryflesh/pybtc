@@ -1048,7 +1048,7 @@ class Transaction(dict):
                         self["vIn"][i]["txInWitness"] = []
         no_segwit_view = self.serialize(segwit=False, hex=False)
         self["txId"] = double_sha256(no_segwit_view)
-        self["rawTx"] = self.serialize(segwit=True, hex=False)
+        self["rawTx"] = self.serialize(hex=False)
         self["hash"] = double_sha256(self["rawTx"])
 
         self["size"] = len(self["rawTx"])
