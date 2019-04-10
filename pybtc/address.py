@@ -99,6 +99,7 @@ class PublicKey:
 
     """
     def __init__(self, key, compressed=True, testnet=False):
+        public_key = None
         if isinstance(key, str):
             try:
                 key = bytes_from_hex(key)
