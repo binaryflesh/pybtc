@@ -215,7 +215,7 @@ class Transaction(dict):
                                                              self["testnet"],
                                                              sh,
                                                              witness_version)
-            except:
+            except(AttributeError, ValueError):
                 pass
             self["vOut"][i]["scriptPubKeyOpcodes"] = decode_script(self["vOut"][i]["scriptPubKey"])
             self["vOut"][i]["scriptPubKeyAsm"] = decode_script(self["vOut"][i]["scriptPubKey"], 1)
@@ -253,14 +253,14 @@ class Transaction(dict):
                         w = bytes_from_hex(w)
                     append(w)
                 self["vIn"][i]["txInWitness"] = t
-            except:
+            except(ValueError, AttributeError):
                 pass
             try:
                 if type(self["vIn"][i]["addressHash"]) == str:
                     self["vIn"][i]["addressHash"] = bytes_from_hex(self["vIn"][i]["addressHash"])
                 if "address" in self["vIn"][i]:
                     del self["vIn"][i]["address"]
-            except:
+            except(ValueError, AttributeError):
                 pass
             if "scriptSigAsm" in self["vIn"][i]:
                 del self["vIn"][i]["scriptSigAsm"]
@@ -287,7 +287,7 @@ class Transaction(dict):
                     self["vOut"][i]["addressHash"] = bytes_from_hex(self["vOut"][i]["addressHash"])
                 if "address" in self["vOut"][i]:
                     del self["vOut"][i]["address"]
-            except:
+            except(ValueError, AttributeError):
                 pass
             if "scriptPubKeyOpcodes" in self["vOut"][i]:
                 del self["vOut"][i]["scriptPubKeyOpcodes"]
@@ -369,7 +369,7 @@ class Transaction(dict):
         """
         try:
             return json.dumps(self)
-        except:
+        except(ValueError, AttributeError, TypeError):
             pass
         return json.dumps(self.decode())
 
