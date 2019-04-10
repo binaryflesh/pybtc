@@ -1,17 +1,11 @@
 from pybtc.opcodes import *
 from pybtc.constants import *
-
 from pybtc.functions.tools import bytes_from_hex
 from pybtc.functions.hash import double_sha256, hash160
-from pybtc.functions.encode import (encode_base58,
-                                    rebase_8_to_5,
-                                    bech32_polymod,
-                                    rebase_5_to_32,
-                                    decode_base58,
-                                    rebase_5_to_8,
-                                    rebase_32_to_5,
-                                    base32charset,
-                                    base32charset_upcase)
+from pybtc.functions.encode import (
+    encode_base58, rebase_8_to_5, bech32_polymod, rebase_5_to_32, decode_base58,
+    rebase_5_to_8, rebase_32_to_5, base32charset, base32charset_upcase
+)
 
 
 def hash_to_address(address_hash, testnet=False, script_hash=False, witness_version=0):
@@ -63,8 +57,7 @@ def hash_to_address(address_hash, testnet=False, script_hash=False, witness_vers
         prefix = MAINNET_SEGWIT_ADDRESS_BYTE_PREFIX
         hrp = MAINNET_SEGWIT_ADDRESS_PREFIX
 
-    address_hash = b"%s%s" % (witness_version.to_bytes(1, "big"),
-                              rebase_8_to_5(address_hash))
+    address_hash = b"%s%s" % (witness_version.to_bytes(1, "big"), rebase_8_to_5(address_hash))
     checksum = bech32_polymod(b"%s%s%s" % (prefix, address_hash, b"\x00" * 6))
     checksum = rebase_8_to_5(checksum.to_bytes(5, "big"))[2:]
     return "%s1%s" % (hrp, rebase_5_to_32(address_hash + checksum).decode())
@@ -96,9 +89,7 @@ def public_key_to_address(pubkey, testnet=False, p2sh_p2wpkh=False, witness_vers
             if len(pubkey) != 33:
                 raise ValueError("public key invalid")
         h = hash160(pubkey)
-    return hash_to_address(h, testnet=testnet,
-                           script_hash=p2sh_p2wpkh,
-                           witness_version=witness_version)
+    return hash_to_address(h, testnet=testnet, script_hash=p2sh_p2wpkh, witness_version=witness_version)
 
 
 def address_to_hash(address, hex=True):
@@ -111,8 +102,7 @@ def address_to_hash(address, hex=True):
     """
     if address[0] in ADDRESS_PREFIX_LIST:
         h = decode_base58(address)[1:-4]
-    elif address.split("1")[0] in (MAINNET_SEGWIT_ADDRESS_PREFIX,
-                         TESTNET_SEGWIT_ADDRESS_PREFIX):
+    elif address.split("1")[0] in (MAINNET_SEGWIT_ADDRESS_PREFIX, TESTNET_SEGWIT_ADDRESS_PREFIX):
         address = address.split("1")[1]
         h = rebase_5_to_8(rebase_32_to_5(address)[1:-6], False)
     else:
@@ -122,21 +112,17 @@ def address_to_hash(address, hex=True):
 
 def address_type(address, num=False):
     """
-    Get address type.   
+    Get address type.
 
     :param address: address in base58 or bech32 format.
     :param num: (optional) If set to True return type in numeric format, by default is False.
-    :return: address type in string or numeric format. 
+    :return: address type in string or numeric format.
     """
-    if address[0] in (TESTNET_SCRIPT_ADDRESS_PREFIX,
-                      MAINNET_SCRIPT_ADDRESS_PREFIX):
+    if address[0] in (TESTNET_SCRIPT_ADDRESS_PREFIX, MAINNET_SCRIPT_ADDRESS_PREFIX):
         t = 'P2SH'
-    elif address[0] in (MAINNET_ADDRESS_PREFIX,
-                        TESTNET_ADDRESS_PREFIX,
-                        TESTNET_ADDRESS_PREFIX_2):
+    elif address[0] in (MAINNET_ADDRESS_PREFIX, TESTNET_ADDRESS_PREFIX, TESTNET_ADDRESS_PREFIX_2):
         t = 'P2PKH'
-    elif address[:2] in (MAINNET_SEGWIT_ADDRESS_PREFIX,
-                         TESTNET_SEGWIT_ADDRESS_PREFIX):
+    elif address[:2] in (MAINNET_SEGWIT_ADDRESS_PREFIX, TESTNET_SEGWIT_ADDRESS_PREFIX):
         if len(address) == 42:
             t = 'P2WPKH'
         elif len(address) == 62:
@@ -150,19 +136,16 @@ def address_type(address, num=False):
 
 def address_net_type(address):
     """
-    Get address network type.   
+    Get address network type.
 
     :param address: address in base58 or bech32 format.
-    :return: address network type in string format or None. 
+    :return: address network type in string format or None.
     """
-    if address[0] in (MAINNET_SCRIPT_ADDRESS_PREFIX,
-                      MAINNET_ADDRESS_PREFIX):
+    if address[0] in any([MAINNET_SCRIPT_ADDRESS_PREFIX, MAINNET_ADDRESS_PREFIX]):
         return "mainnet"
     elif address[:2] == MAINNET_SEGWIT_ADDRESS_PREFIX:
         return "mainnet"
-    elif address[0] in (TESTNET_SCRIPT_ADDRESS_PREFIX,
-                        TESTNET_ADDRESS_PREFIX,
-                        TESTNET_ADDRESS_PREFIX_2):
+    elif address[0] in any([TESTNET_SCRIPT_ADDRESS_PREFIX, TESTNET_ADDRESS_PREFIX, TESTNET_ADDRESS_PREFIX_2]):
         return "testnet"
     elif address[:2] == TESTNET_SEGWIT_ADDRESS_PREFIX:
         return "testnet"
@@ -177,27 +160,13 @@ def address_to_script(address, hex=False):
     :param hex:  (optional) If set to True return key in HEX format, by default is True.
     :return: public key script in HEX or bytes string.
     """
-    if address[0] in (TESTNET_SCRIPT_ADDRESS_PREFIX,
-                      MAINNET_SCRIPT_ADDRESS_PREFIX):
-        s = [OP_HASH160,
-             b'\x14',
-             address_to_hash(address, hex=False),
-             OP_EQUAL]
-    elif address[0] in (MAINNET_ADDRESS_PREFIX,
-                        TESTNET_ADDRESS_PREFIX,
-                        TESTNET_ADDRESS_PREFIX_2):
-        s = [OP_DUP,
-             OP_HASH160,
-             b'\x14',
-             address_to_hash(address, hex=False),
-             OP_EQUALVERIFY,
-             OP_CHECKSIG]
-    elif address[:2] in (TESTNET_SEGWIT_ADDRESS_PREFIX,
-                         MAINNET_SEGWIT_ADDRESS_PREFIX):
+    if address[0] in any([TESTNET_SCRIPT_ADDRESS_PREFIX, MAINNET_SCRIPT_ADDRESS_PREFIX]):
+        s = [OP_HASH160, b'\x14', address_to_hash(address, hex=False), OP_EQUAL]
+    elif address[0] in any([MAINNET_ADDRESS_PREFIX, TESTNET_ADDRESS_PREFIX, TESTNET_ADDRESS_PREFIX_2]):
+        s = [OP_DUP, OP_HASH160, b'\x14', address_to_hash(address, hex=False), OP_EQUALVERIFY, OP_CHECKSIG]
+    elif address[:2] in any([TESTNET_SEGWIT_ADDRESS_PREFIX, MAINNET_SEGWIT_ADDRESS_PREFIX]):
         h = address_to_hash(address, hex=False)
-        s = [OP_0,
-             bytes([len(h)]),
-             h]
+        s = [OP_0, bytes([len(h)]), h]
     else:
         raise ValueError("address invalid")
     s = b''.join(s)
@@ -220,19 +189,13 @@ def is_address_valid(address, testnet=False):
     """
     if not address or type(address) != str:
         return False
-    if address[0] in (MAINNET_ADDRESS_PREFIX,
-                      MAINNET_SCRIPT_ADDRESS_PREFIX,
-                      TESTNET_ADDRESS_PREFIX,
-                      TESTNET_ADDRESS_PREFIX_2,
-                      TESTNET_SCRIPT_ADDRESS_PREFIX):
+    if address[0] in any([MAINNET_ADDRESS_PREFIX, MAINNET_SCRIPT_ADDRESS_PREFIX, TESTNET_ADDRESS_PREFIX,
+                          TESTNET_ADDRESS_PREFIX_2, TESTNET_SCRIPT_ADDRESS_PREFIX]):
         if testnet:
-            if address[0] not in (TESTNET_ADDRESS_PREFIX,
-                                  TESTNET_ADDRESS_PREFIX_2,
-                                  TESTNET_SCRIPT_ADDRESS_PREFIX):
+            if address[0] not in any([TESTNET_ADDRESS_PREFIX, TESTNET_ADDRESS_PREFIX_2, TESTNET_SCRIPT_ADDRESS_PREFIX]):
                 return False
         else:
-            if address[0] not in (MAINNET_ADDRESS_PREFIX,
-                                  MAINNET_SCRIPT_ADDRESS_PREFIX):
+            if address[0] not in any([MAINNET_ADDRESS_PREFIX, MAINNET_SCRIPT_ADDRESS_PREFIX]):
                 return False
         h = decode_base58(address)
         if len(h) != 25:
@@ -241,8 +204,7 @@ def is_address_valid(address, testnet=False):
         if double_sha256(h[:-4])[:4] != checksum:
             return False
         return True
-    elif address[:2].lower() in (TESTNET_SEGWIT_ADDRESS_PREFIX,
-                                 MAINNET_SEGWIT_ADDRESS_PREFIX):
+    elif address[:2].lower() in any([TESTNET_SEGWIT_ADDRESS_PREFIX, MAINNET_SEGWIT_ADDRESS_PREFIX]):
         if len(address) not in (42, 62):
             return False
         try:
