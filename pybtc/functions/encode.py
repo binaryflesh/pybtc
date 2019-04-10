@@ -54,7 +54,7 @@ def rebase_32_to_5(data):
     append = b.append
     try:
         [append(int_base32_map[i]) for i in data]
-    except:
+    except(IndexError, ValueError, AttributeError):
         raise Exception("Non base32 characters")
     return b
 
