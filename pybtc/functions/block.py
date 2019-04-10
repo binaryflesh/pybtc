@@ -1,6 +1,7 @@
 from pybtc.functions.tools import s2rh, bytes_from_hex, int_from_bytes
 from pybtc.functions.hash import double_sha256
 
+
 def merkle_root(tx_hash_list, hex=True):
     """
     Calculate merkle root from transaction hash list
@@ -126,5 +127,3 @@ def difficulty_to_target(difficulty):
     :return: float.
     """
     return int(0x00000000FFFF0000000000000000000000000000000000000000000000000000 / difficulty)
-
-
