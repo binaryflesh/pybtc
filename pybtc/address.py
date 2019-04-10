@@ -133,7 +133,7 @@ class PublicKey:
         return self.hex
 
 
-class Address():
+class Address:
     """
     The class for Address object.
 
