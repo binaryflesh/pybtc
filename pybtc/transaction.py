@@ -751,7 +751,7 @@ class Transaction(dict):
         if amount is None:
             try:
                 amount = self["vIn"][n]["value"]
-            except:
+            except(ValueError, AttributeError, IndexError):
                 raise RuntimeError("no input amount")
         sighash = self.sig_hash_segwit(n, amount, script_pub_key=b"".join(s), sighash_type=sighash_type)
         sighash = bytes.fromhex(sighash) if isinstance(sighash, str) else sighash
@@ -763,7 +763,7 @@ class Transaction(dict):
         else:
             self["vIn"][n]['txInWitness'] = [signature.hex(),
                                              public_key[0].hex()]
-        self["vIn"][n]['signatures'] = [signature,] if self["format"] == "raw" else [signature.hex(),]
+        self["vIn"][n]['signatures'] = [signature] if self["format"] == "raw" else [signature.hex()]
         return b""
 
     def __sign_p2wsh(self, n, private_key, public_key, script_pub_key, redeem_script, sighash_type, amount):
@@ -779,14 +779,14 @@ class Transaction(dict):
         if amount is None:
             try:
                 amount = self["vIn"][n]["value"]
-            except:
+            except(ValueError, AttributeError, IndexError):
                 raise RuntimeError("no input amount")
         if rst["type"] == "MULTISIG":
-            return self.__sign_p2wsh_multisig(n, private_key, public_key,
-                                              script_pub_key, redeem_script, sighash_type, amount)
+            return self.__sign_p2wsh_multisig(
+                n, private_key, public_key, script_pub_key, redeem_script, sighash_type, amount)
         else:
-            return self.__sign_p2wsh_custom(n, private_key, public_key,
-                                            script_pub_key, redeem_script, sighash_type, amount)
+            return self.__sign_p2wsh_custom(
+                n, private_key, public_key, script_pub_key, redeem_script, sighash_type, amount)
 
     def __sign_p2wsh_multisig(self, n, private_key, public_key, script_pub_key, redeem_script, sighash_type, amount):
         script_code = int_to_var_int(len(redeem_script)) + redeem_script
@@ -796,8 +796,8 @@ class Transaction(dict):
         self["vIn"][n]['signatures'] = [s if self["format"] == "raw" else s.hex() for s in sig]
         if "txInWitness" not in self["vIn"][n]:
             self["vIn"][n]["txInWitness"] = []
-        witness = self.__get_multisig_script_sig__(self["vIn"][n]["txInWitness"],
-                                                   public_key, sig, script_code, redeem_script, n, amount)
+        witness = self.__get_multisig_script_sig__(
+            self["vIn"][n]["txInWitness"], public_key, sig, script_code, redeem_script, n, amount)
         if self["format"] == "raw":
             self["vIn"][n]['txInWitness'] = list(witness)
         else:
@@ -807,8 +807,7 @@ class Transaction(dict):
     def __sign_p2wsh_custom(self, n, private_key, public_key, script_pub_key, redeem_script, sighash_type, amount):
         raise RuntimeError("not implemented __sign_p2wsh_custom")
 
-    def __sign_p2sh_p2wsh_multisig(self, n, private_key, public_key,
-                                   redeem_script, sighash_type, amount):
+    def __sign_p2sh_p2wsh_multisig(self, n, private_key, public_key, redeem_script, sighash_type, amount):
         self["segwit"] = True
         script_code = int_to_var_int(len(redeem_script)) + redeem_script
         sighash = self.sig_hash_segwit(n, amount, script_pub_key=script_code, sighash_type=sighash_type)
@@ -817,13 +816,8 @@ class Transaction(dict):
         self["vIn"][n]['signatures'] = [s if self["format"] == "raw" else s.hex() for s in sig]
         if "txInWitness" not in self["vIn"][n]:
             self["vIn"][n]["txInWitness"] = []
-        witness = self.__get_multisig_script_sig__(self["vIn"][n]["txInWitness"],
-                                                   public_key,
-                                                   sig,
-                                                   script_code,
-                                                   redeem_script,
-                                                   n,
-                                                   amount)
+        witness = self.__get_multisig_script_sig__(
+            self["vIn"][n]["txInWitness"], public_key, sig, script_code, redeem_script, n, amount)
         if self["format"] == "raw":
             self["vIn"][n]['txInWitness'] = list(witness)
         else:
