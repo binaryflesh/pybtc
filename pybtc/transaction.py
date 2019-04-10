@@ -34,11 +34,11 @@ class Transaction(dict):
     :param boolean testnet: address type for "decoded" transaction representation.
 
     """
-    def __init__(self, raw_tx=None, format="decoded", version=1, lock_time=0, testnet=False, auto_commit=True):
+    def __init__(self, raw_tx=None, _format="decoded", version=1, lock_time=0, testnet=False, auto_commit=True):
         if format not in ("decoded", "raw"):
             raise ValueError("format error, raw or decoded allowed")
         self.auto_commit = auto_commit
-        self["format"] = format
+        self["format"] = _format
         self["testnet"] = testnet
         self["segwit"] = False
         self["txId"] = None
@@ -109,7 +109,7 @@ class Transaction(dict):
         if sw:
             sw = tell() - start
             for k in range(ic):
-                self["vIn"][k]["txInWitness"] = [read(var_int_to_int(read_var_int(stream))) \
+                self["vIn"][k]["txInWitness"] = [read(var_int_to_int(read_var_int(stream)))
                                                  for c in range(var_int_to_int(read_var_int(stream)))]
             sw_len = (stream.tell() - start) - sw + 2
 
